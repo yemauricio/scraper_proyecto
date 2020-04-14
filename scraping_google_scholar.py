@@ -27,7 +27,7 @@ order_date = '//*[@id="gs_bdy_sb_in"]/ul[1]/li[2]/a'
 key_words = ["covid+mask+register"]
 
 
-# In[ ]:
+# In[32]:
 
 
 
@@ -45,7 +45,9 @@ def clean_results(df_result):
     df_result = df_result[df_result["link"] != '']
     df_result = df_result[df_result["link"] != 'javascript:void(0)']
     df_result = df_result.reset_index().groupby(["name","link","num_page"]).count().reset_index()
-    df_result = df_result[df_result["index"]==1].drop(columns={"index"})
+    df_result["citacion"] = df_result.apply(lambda row: "citations" in row["link"] , axis=1)
+    df_result = df_result[df_result["citacion"]==False]
+    df_result = df_result[df_result["index"]==1].drop(columns={"index","citacion"})
     return df_result
 
 
@@ -55,7 +57,7 @@ link_to_search = google_scholar.format(key_words[0])
 driver.get(link_to_search)
 next_page = True
 page_num = 1
-stop = 50
+stop = 1
 df_elements = pd.DataFrame({"name":[],"link":[],"num_page":[]})
 # the next loop tried to obtain onformation from all the index pages sadly it doesn't have information to stop
 # I added an stoper at 50 pages
@@ -90,11 +92,16 @@ while next_page:
     except:
         next_page = False
     # stoping process   
-    if page_num == stop:
+    if page_num > stop:
         next_page = False
         
 df_results.to_csv("articles_related_with_covid_mask.csv")
 
-
 driver.quit()
+
+
+# In[ ]:
+
+
+
 
